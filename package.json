@@ -1,0 +1,26 @@
+{
+  "name": "roku-websocket-server",
+  "version": "1.0.0",
+  "description": "A Node.js server with WebSocket and HTTP trigger endpoints for Roku clients.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "keywords": [
+    "websocket",
+    "roku",
+    "brightscript",
+    "nodejs",
+    "express"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
