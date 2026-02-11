@@ -1,20 +1,25 @@
 // src/server.js
-const WebSocket = require('ws');
 const express = require('express');
+const http = require('http');
+const WebSocket = require('ws');
 
 // --- Configuration ---
-// Use environment variables for ports, with fallbacks for local development
-const WS_PORT = process.env.WS_PORT || 8080;
-const HTTP_PORT = process.env.HTTP_PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
-// --- WebSocket Server Setup (for Roku clients) ---
-const wss = new WebSocket.Server({ port: WS_PORT });
+// --- Create a single HTTP server ---
+const app = express();
+app.use(express.json()); // Middleware to parse JSON bodies
+const server = http.createServer(app);
+
+// --- Attach WebSocket server to the HTTP server ---
+const wss = new WebSocket.Server({ server });
 const clients = new Set(); // Store all connected Roku clients
 
-console.log(`WebSocket server is running on ws://0.0.0.0:${WS_PORT}`);
+console.log(`Server is running on http://0.0.0.0:${PORT}`);
 
+// --- WebSocket Logic ---
 wss.on('connection', (ws) => {
-    console.log('New Roku client connected!');
+    console.log('New Roku client connected via WebSocket upgrade!');
     clients.add(ws);
 
     ws.on('message', (message) => {
@@ -32,15 +37,12 @@ wss.on('connection', (ws) => {
     });
 });
 
-// --- Express HTTP Server Setup (for triggers) ---
-const app = express();
-app.use(express.json()); // Middleware to parse JSON bodies
-
+// --- HTTP Trigger Endpoint Logic ---
 app.post('/trigger', (req, res) => {
     const { message } = req.body;
 
     if (!message) {
-        return res.status(400).json({ status: 'error', message: 'The "message" field is required in the request body.' });
+        return res.status(400).json({ status: 'error', message: 'The "message" field is required.' });
     }
 
     if (clients.size === 0) {
@@ -58,6 +60,7 @@ app.post('/trigger', (req, res) => {
     res.status(200).json({ status: 'success', message: 'Message broadcasted successfully.' });
 });
 
-app.listen(HTTP_PORT, () => {
-    console.log(`HTTP trigger server is listening on http://0.0.0.0:${HTTP_PORT}`);
+// --- Start the combined server ---
+server.listen(PORT, () => {
+    console.log(`HTTP server & WebSocket upgrades are listening on port ${PORT}`);
 });
