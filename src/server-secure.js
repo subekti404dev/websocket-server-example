@@ -15,19 +15,20 @@ const serverOptions = {
   
   // Allow RSA cipher suites alongside ECDHE (REQUIRED FOR ROKU)
   // This ensures the server can accept connections from roku_modules WebSocketClient
+  // NOTE: Put RSA ciphers FIRST to ensure Roku gets a compatible cipher
   ciphers: [
-    // ECDHE ciphers (for other clients)
+    // RSA ciphers (REQUIRED FOR ROKU - roku_modules TlsUtil only supports RSA)
+    'AES128-GCM-SHA256',           // TLS_RSA_WITH_AES_128_GCM_SHA256
+    'AES256-GCM-SHA384',           // TLS_RSA_WITH_AES_256_GCM_SHA384
+    'AES128-SHA256',               // TLS_RSA_WITH_AES_128_CBC_SHA256
+    'AES256-SHA256',               // TLS_RSA_WITH_AES_256_CBC_SHA256
+    // ECDHE ciphers (for other clients - browsers, mobile, etc.)
     'ECDHE-ECDSA-AES128-GCM-SHA256',
     'ECDHE-RSA-AES128-GCM-SHA256',
     'ECDHE-ECDSA-AES256-GCM-SHA384',
     'ECDHE-RSA-AES256-GCM-SHA384',
-    // RSA ciphers (REQUIRED FOR ROKU - roku_modules TlsUtil only supports RSA)
-    'RSA+AES128-GCM-SHA256',
-    'RSA+AES256-GCM-SHA384',
-    'RSA+AES128-SHA256',
-    'RSA+AES256-SHA384',
   ].join(':'),
-  honorCipherOrder: true, // Let server choose cipher, but allow RSA as fallback
+  honorCipherOrder: false, // Let CLIENT choose cipher (so Roku can pick RSA)
 };
 
 // --- Create Express app ---
